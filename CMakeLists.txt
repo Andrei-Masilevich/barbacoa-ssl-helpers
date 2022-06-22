@@ -35,7 +35,6 @@ set(SSL_HELPERS_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/aes256.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/crypto_stream_impl.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/shadowing.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/inplace.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/config.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/dh.cpp"

@@ -30,12 +30,17 @@ auto &ssl_config = context::configurate().enable_libcrypto_api().set_file_buffer
 auto &ssl_ctx = ssl_helpers::context::init(ssl_config);
 
 // In business logic if context required.
-ssl_helpers::aes_encrypt_file(ssl_ctx, secret_file, secret_key);
-auto or_check_hash = ssl_helpers::create_sha256_from_file(ssl_ctx,
-                                                          secret_file);
-
-ssl_helpers::aes_encrypt_file(ssl_ctx, shredded_file, 
-                              ssl_helpers::create_random_string(ssl_ctx, 13));
+auto check_hash = ssl_helpers::create_sha256_from_file(ssl_ctx,
+                                                          some_file);
+std::string secret_key = "BlaBlaBla";
+auto check_key_hash = ssl_helpers::create_ripemd160(ssl_ctx,
+                                                          secret_key, 4);
+auto blabla_salt = ssl_helpers::create_random_string(ssl_ctx, 2);
+std::string secret_data_maybe_from_file = "My Top Secret";
+secret_data_maybe_from_file += blabla_salt;
+auto  encrypted = ssl_helpers::aes_encrypt(ssl_ctx, secret_data_maybe_from_file, secret_key);
+std::string encrypted_to_store = check_key_hash + blabla_salt + encrypted;
+ssl_helpers::aes_decrypt(ssl_ctx, encrypted, secret_key);
 
 // In business logic without context ssl_helpers provides ordinary functions.
 auto secret_key = ssl_helpers::create_pbkdf2_512(secret_password, salt);
