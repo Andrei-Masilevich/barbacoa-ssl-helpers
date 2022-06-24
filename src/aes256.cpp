@@ -38,6 +38,12 @@ namespace impl {
     }
 
     template <>
+    aes_128bit_type create_from_string<aes_128bit_type>(const char* pstr, size_t len)
+    {
+        return create_from_string_impl<aes_128bit_type>(pstr, len);
+    }
+
+    template <>
     std::string to_string<aes_512bit_type>(const aes_512bit_type& data)
     {
         return to_string_impl<aes_512bit_type>(data);
@@ -47,6 +53,12 @@ namespace impl {
     std::string to_string<aes_256bit_type>(const aes_256bit_type& data)
     {
         return to_string_impl<aes_256bit_type>(data);
+    }
+
+    template <>
+    std::string to_string<aes_128bit_type>(const aes_128bit_type& data)
+    {
+        return to_string_impl<aes_128bit_type>(data);
     }
 
     aes_stream_encryptor::~aes_stream_encryptor()
@@ -68,7 +80,7 @@ namespace impl {
         auto cypher_init_result = (1 == EVP_EncryptInit_ex(_ctx, EVP_aes_256_gcm(), NULL, NULL, NULL));
         SSL_HELPERS_ASSERT(cypher_init_result, ERR_error_string(ERR_get_error(), nullptr));
 
-        auto cypher_init_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL));
+        auto cypher_init_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_IVLEN, aes_size<gcm_iv_type>(), NULL));
         SSL_HELPERS_ASSERT(cypher_init_result_2, ERR_error_string(ERR_get_error(), nullptr));
 
         auto cypher_init_result_3 = (1 == EVP_EncryptInit_ex(_ctx, NULL, NULL, (unsigned char*)key.data(), (unsigned char*)init_value.data()));
@@ -109,7 +121,7 @@ namespace impl {
 
         SSL_HELPERS_ASSERT(!len_);
 
-        auto cypher_fin_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_GET_TAG, 16, tag.data()));
+        auto cypher_fin_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_GET_TAG, aes_size<gcm_tag_type>(), tag.data()));
         SSL_HELPERS_ASSERT(cypher_fin_result_2, ERR_error_string(ERR_get_error(), nullptr));
 
         EVP_CIPHER_CTX_free(_ctx);
@@ -136,7 +148,7 @@ namespace impl {
         auto cypher_init_result = (1 == EVP_DecryptInit_ex(_ctx, EVP_aes_256_gcm(), NULL, NULL, NULL));
         SSL_HELPERS_ASSERT(cypher_init_result, ERR_error_string(ERR_get_error(), nullptr));
 
-        auto cypher_init_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL));
+        auto cypher_init_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_IVLEN, aes_size<gcm_iv_type>(), NULL));
         SSL_HELPERS_ASSERT(cypher_init_result_2, ERR_error_string(ERR_get_error(), nullptr));
 
         auto cypher_init_result_3 = (1 == EVP_DecryptInit_ex(_ctx, NULL, NULL, (unsigned char*)key.data(), (unsigned char*)init_value.data()));
@@ -175,7 +187,7 @@ namespace impl {
 
         if (std::memcmp(tag.data(), null_tag.data(), tag.size()))
         {
-            auto cypher_fin_result_1 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, 16, (void*)tag.data()));
+            auto cypher_fin_result_1 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, aes_size<gcm_tag_type>(), (void*)tag.data()));
             SSL_HELPERS_ASSERT(cypher_fin_result_1, ERR_error_string(ERR_get_error(), nullptr));
 
             auto cypher_fin_result_2 = (1 == EVP_DecryptFinal_ex(_ctx, NULL, &len_));
@@ -243,9 +255,9 @@ namespace impl {
 
     std::vector<char> aes_block::encrypt(const sha512& key, const char* plain_data, size_t len)
     {
-        std::vector<char> cipher_data(len + 16);
+        std::vector<char> cipher_data(len + aes_size<aes_128bit_type>());
         auto cipher_len = encrypt((unsigned char*)plain_data, (int)len,
-                                  (unsigned char*)key.data(), ((unsigned char*)key.data()) + 32,
+                                  (unsigned char*)key.data(), ((unsigned char*)key.data()) + aes_size<aes_256bit_type>(),
                                   (unsigned char*)cipher_data.data());
         SSL_HELPERS_ASSERT(cipher_len <= cipher_data.size());
         cipher_data.resize(cipher_len);
@@ -255,7 +267,7 @@ namespace impl {
     {
         std::vector<char> plain_data(len);
         auto plain_len = decrypt((unsigned char*)cipher_data, (int)len,
-                                 (unsigned char*)key.data(), ((unsigned char*)key.data()) + 32,
+                                 (unsigned char*)key.data(), ((unsigned char*)key.data()) + aes_size<aes_256bit_type>(),
                                  (unsigned char*)plain_data.data());
         plain_data.resize(plain_len);
         return plain_data;

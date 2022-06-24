@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ssl_helpers/crypto_types.h>
+
 #include <string>
 #include <vector>
 #include <array>
@@ -21,12 +23,9 @@
 namespace ssl_helpers {
 namespace impl {
 
-    using aes_512bit_type = std::array<char, 32>;
-    using aes_256bit_type = std::array<char, 16>;
-
-    using gcm_key_type = aes_512bit_type;
-    using gcm_iv_type = aes_256bit_type;
-    using gcm_tag_type = aes_256bit_type;
+    using gcm_key_type = aes_256bit_type;
+    using gcm_iv_type = aes_128bit_type;
+    using gcm_tag_type = aes_128bit_type;
 
     template <class aes_array_type>
     aes_array_type create_from_string(const char*, size_t);

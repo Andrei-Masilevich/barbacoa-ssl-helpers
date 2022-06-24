@@ -35,28 +35,20 @@ std::string create_pseudo_random_string_from_time(const uint32_t offset)
     return enc.result().str();
 }
 
-uint64_t create_random(const context& ctx, const uint64_t offset)
+uint64_t create_random(const context& ctx)
 {
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
 
-        constexpr const size_t SZ = sizeof(uint64_t);
+        constexpr const size_t sz = sizeof(uint64_t);
 
-        uint8_t buf[SZ] = { 0 };
+        uint8_t buf[sz] = { 0 };
 
-        if (offset)
-        {
-            std::memcpy(buf, &offset, SZ);
-            auto entropy = offset % SZ;
-            RAND_add(buf, SZ, entropy);
-            std::memset(buf, 0, SZ);
-        }
-
-        SSL_HELPERS_ASSERT(RAND_bytes(buf, SZ) == 1, "Libcrypto RAND failed");
+        SSL_HELPERS_ASSERT(RAND_bytes(buf, sz) == 1, "Libcrypto RAND failed");
 
         uint64_t rnd = 0;
-        std::memcpy(&rnd, buf, SZ);
+        std::memcpy(&rnd, buf, sz);
         return rnd;
     }
     catch (std::exception& e)
@@ -87,6 +79,24 @@ std::string create_random_string(const context& ctx, const size_t size, bool fix
         SSL_HELPERS_ERROR(e.what());
     }
     return {};
+}
+
+bool get_random(const context& ctx, unsigned char* pbuff, size_t size)
+{
+    try
+    {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+        SSL_HELPERS_ASSERT(pbuff && size > 0, "Size required");
+
+        SSL_HELPERS_ASSERT(RAND_bytes(pbuff, size) == 1, "Libcrypto RAND failed");
+
+        return true;
+    }
+    catch (std::exception& e)
+    {
+        SSL_HELPERS_ERROR(e.what());
+    }
+    return false;
 }
 
 } // namespace ssl_helpers

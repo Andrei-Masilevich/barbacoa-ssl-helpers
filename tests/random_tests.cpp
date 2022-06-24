@@ -17,15 +17,17 @@ namespace tests {
 
         auto rnd1 = create_pseudo_random_from_time();
         auto rnd2 = create_pseudo_random_from_time(12);
+        auto rnd3 = create_pseudo_random_from_time(13);
 
-        // There is extremely low probability that rnd1 = rnd2 or rnd3 = rnd4:
+        // There is extremely low probability that rnd1 = rnd2 = rnd3:
 
-        BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd1)(rnd2));
+        BOOST_CHECK_NE((rnd1 == rnd2) && (rnd1 == rnd3), true);
 
-        auto rnd3 = create_pseudo_random_string_from_time();
-        auto rnd4 = create_pseudo_random_string_from_time(12);
+        auto rnd1_str = create_pseudo_random_string_from_time();
+        auto rnd2_str = create_pseudo_random_string_from_time(12);
+        auto rnd3_str = create_pseudo_random_string_from_time(13);
 
-        BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd3)>(), (rnd3)(rnd4));
+        BOOST_CHECK_NE((rnd1_str == rnd2_str) && (rnd1_str == rnd3_str), true);
     }
 
     BOOST_AUTO_TEST_CASE(random_check)
@@ -33,13 +35,12 @@ namespace tests {
         print_current_test_name();
 
         auto rnd1 = create_random(default_context_with_crypto_api());
-        auto rnd2 = create_random(default_context_with_crypto_api(), 12);
-        auto rnd3 = create_random(default_context_with_crypto_api(), 120);
+        auto rnd2 = create_random(default_context_with_crypto_api());
+        auto rnd3 = create_random(default_context_with_crypto_api());
 
-        // There is extremely low probability that rnd1 = rnd2 or rnd2 = rnd3:
+        // There is extremely low probability that rnd1 = rnd2 = rnd3:
 
-        BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd1)(rnd2));
-        BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd2)(rnd3));
+        BOOST_CHECK_NE((rnd1 == rnd2) && (rnd1 == rnd3), true);
     }
 
     BOOST_AUTO_TEST_CASE(random_fixed_string_check)
@@ -66,9 +67,15 @@ namespace tests {
 
         BOOST_REQUIRE_EQUAL(rnd2.size(), 13);
 
-        // There is extremely low probability that rnd1 = rnd2 or rnd2 = rnd3:
+        auto rnd3 = create_random_string(default_context_with_crypto_api(), 13, true);
 
-        BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd1)(rnd2));
+        DUMP_STR(to_printable(rnd3));
+
+        BOOST_REQUIRE_EQUAL(rnd3.size(), 13);
+
+        // There is extremely low probability that rnd1 = rnd2 = rnd3:
+
+        BOOST_CHECK_NE((rnd1 == rnd2) && (rnd1 == rnd3), true);
     }
 
     BOOST_AUTO_TEST_CASE(random_string_check)
@@ -90,9 +97,15 @@ namespace tests {
 
         BOOST_REQUIRE_LE(rnd2.size(), 13);
 
-        // There is extremely low probability that rnd1 = rnd2 or rnd2 = rnd3:
+        auto rnd3 = create_random_string(default_context_with_crypto_api(), 13, false);
 
-        BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd1)(rnd2));
+        DUMP_STR(to_printable(rnd3));
+
+        BOOST_REQUIRE_LE(rnd3.size(), 13);
+
+        // There is extremely low probability that rnd1 = rnd2 = rnd3:
+
+        BOOST_CHECK_NE((rnd1 == rnd2) && (rnd1 == rnd3), true);
     }
 
     BOOST_AUTO_TEST_SUITE_END()

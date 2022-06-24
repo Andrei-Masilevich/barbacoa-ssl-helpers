@@ -12,14 +12,14 @@
 
 namespace ssl_helpers {
 
-std::string aes_to_string(const aes_256bit_type& data)
+std::string aes_to_string(const aes_128bit_type& data)
 {
     return impl::to_string(data);
 }
 
-aes_256bit_type aes_from_string(const std::string& tag)
+aes_128bit_type aes_from_string(const std::string& tag)
 {
-    return impl::create_from_string<aes_256bit_type>(tag.data(), tag.size());
+    return impl::create_from_string<aes_128bit_type>(tag.data(), tag.size());
 }
 
 aes_encryption_stream::aes_encryption_stream(const context& ctx,
