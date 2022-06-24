@@ -12,6 +12,7 @@
 namespace ssl_helpers {
 namespace impl {
 
+    // State Machine for encryption/decryption
     template <class aes_context>
     class aes_stream_sm
     {
@@ -25,7 +26,7 @@ namespace impl {
     public:
         aes_stream_sm() = default;
 
-        std::string start(const std::string& key, const std::string& add = {})
+        std::string start(const std::string& key, const std::string& aad = {})
         {
             SSL_HELPERS_ASSERT(!key.empty(), "Key required");
 
@@ -38,12 +39,12 @@ namespace impl {
             const char* ph_key = h_key.data();
             _context.init(create_from_string<gcm_key_type>(ph_key, h_key.data_size()),
                           create_from_string<gcm_iv_type>(ph_key + 32, h_key.data_size() - 32));
-            if (!add.empty())
-                _context.set_add(add.data(), add.size());
+            if (!aad.empty())
+                _context.set_add(aad.data(), aad.size());
 
             _state = state::initialized;
 
-            return add;
+            return aad;
         }
 
         std::string process(const std::string& plain_chunk)
@@ -80,9 +81,9 @@ namespace impl {
     {
     public:
         __aes_encryption_stream(const context& ctx,
-                                const std::string& key, const std::string& add);
+                                const std::string& key, const std::string& aad);
 
-        std::string start(const std::string& key, const std::string& add);
+        std::string start(const std::string& key, const std::string& aad);
         std::string encrypt(const std::string& plain_chunk);
         gcm_tag_type finalize();
 
@@ -91,23 +92,23 @@ namespace impl {
     private:
         aes_stream_sm<aes_stream_encryptor> _sm;
         std::string _key_shadow;
-        std::string _add;
+        std::string _aad;
     };
 
     class __aes_decryption_stream
     {
     public:
         __aes_decryption_stream(const context& ctx,
-                                const std::string& key, const std::string& add);
+                                const std::string& key, const std::string& aad);
 
-        void start(const std::string& key, const std::string& add);
+        void start(const std::string& key, const std::string& aad);
         std::string decrypt(const std::string& cipher_chunk);
         void finalize(const gcm_tag_type& tag);
 
     private:
         aes_stream_sm<aes_stream_decryptor> _sm;
         std::string _key_shadow;
-        std::string _add;
+        std::string _aad;
     };
 
 } // namespace impl

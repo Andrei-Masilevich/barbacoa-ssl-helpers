@@ -13,13 +13,14 @@
 
 namespace ssl_helpers {
 
-// Create tagged ecrypted data stream that includes tag data of encrypted plane data
-// and optional marker that is ADD (Additional Authenticated Data).
-// Implementation guarantee authenticity of marker and data through the tag (TAG).
+// Create ecrypted data stream that additionally includes tag (TAG) of encrypted data
+// and optional marker that is AAD (Additional Authenticated Data).
+// The TAG is subsequently used during the decryption operation to ensure that
+// the ciphertext and AAD have not been tampered with.
 // Data stream (from top down to bottom):
 //
-//     |ADD (can be readable data)|
-//     |Encrypted plane data (binary)| -> transfer by chunks
+//     |AAD (can be readable data)|
+//     |Encrypted data (binary)| -> transfering by chunks
 //     |TAG (binary with 16 size)|
 //
 
@@ -28,14 +29,14 @@ class aes_encryption_stream
 public:
     aes_encryption_stream(const context&,
                           const std::string& default_key = {},
-                          const std::string& default_add = {});
+                          const std::string& default_aad = {});
     ~aes_encryption_stream();
 
     // Start encryption session.
     std::string start(const std::string& key = {},
-                      const std::string& add = {});
+                      const std::string& aad = {});
 
-    // Encrypt chunk of plane data
+    // Encrypt chunk of data
     std::string encrypt(const std::string& plain_chunk);
 
     // Finalize encryption session and create tag.
@@ -46,19 +47,19 @@ private:
 };
 
 
-// Decrypt tagged ecrypted data stream to plane data.
+// Decrypt tagged encrypted data stream to original data.
 
 class aes_decryption_stream
 {
 public:
     aes_decryption_stream(const context&,
                           const std::string& default_key = {},
-                          const std::string& default_add = {});
+                          const std::string& default_aad = {});
     ~aes_decryption_stream();
 
     // Start decryption session.
     void start(const std::string& key = {},
-               const std::string& add = {});
+               const std::string& aad = {});
 
     // Decrypt chunk of cipher data.
     std::string decrypt(const std::string& cipher_chunk);

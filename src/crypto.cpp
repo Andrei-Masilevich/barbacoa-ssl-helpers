@@ -24,13 +24,13 @@ aes_256bit_type aes_from_string(const std::string& tag)
 
 aes_encryption_stream::aes_encryption_stream(const context& ctx,
                                              const std::string& default_key,
-                                             const std::string& default_add)
+                                             const std::string& default_aad)
 {
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
 
-        _impl = std::make_unique<impl::__aes_encryption_stream>(ctx, default_key, default_add);
+        _impl = std::make_unique<impl::__aes_encryption_stream>(ctx, default_key, default_aad);
     }
     catch (std::exception& e)
     {
@@ -42,11 +42,11 @@ aes_encryption_stream::~aes_encryption_stream()
 {
 }
 
-std::string aes_encryption_stream::start(const std::string& key, const std::string& add)
+std::string aes_encryption_stream::start(const std::string& key, const std::string& aad)
 {
     try
     {
-        return _impl->start(key, add);
+        return _impl->start(key, aad);
     }
     catch (std::exception& e)
     {
@@ -83,13 +83,13 @@ aes_tag_type aes_encryption_stream::finalize()
 
 aes_decryption_stream::aes_decryption_stream(const context& ctx,
                                              const std::string& default_key,
-                                             const std::string& default_add)
+                                             const std::string& default_aad)
 {
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
 
-        _impl = std::make_unique<impl::__aes_decryption_stream>(ctx, default_key, default_add);
+        _impl = std::make_unique<impl::__aes_decryption_stream>(ctx, default_key, default_aad);
     }
     catch (std::exception& e)
     {
@@ -101,11 +101,11 @@ aes_decryption_stream::~aes_decryption_stream()
 {
 }
 
-void aes_decryption_stream::start(const std::string& key, const std::string& add)
+void aes_decryption_stream::start(const std::string& key, const std::string& aad)
 {
     try
     {
-        _impl->start(key, add);
+        _impl->start(key, aad);
     }
     catch (std::exception& e)
     {

@@ -7,18 +7,18 @@ namespace ssl_helpers {
 namespace impl {
 
     __aes_encryption_stream::__aes_encryption_stream(const context& ctx,
-                                                     const std::string& key, const std::string& add)
-        : _add(add)
+                                                     const std::string& key, const std::string& aad)
+        : _aad(aad)
     {
         if (!key.empty())
             _key_shadow = nxor_encode_sec(ctx, key);
     }
 
-    std::string __aes_encryption_stream::start(const std::string& key, const std::string& add)
+    std::string __aes_encryption_stream::start(const std::string& key, const std::string& aad)
     {
         SSL_HELPERS_ASSERT(!key.empty() || !_key_shadow.empty(), "Key required");
 
-        return _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, add.empty() ? _add : add);
+        return _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, aad.empty() ? _aad : aad);
     }
 
     std::string __aes_encryption_stream::encrypt(const std::string& plain_chunk)
@@ -37,16 +37,16 @@ namespace impl {
     }
 
     __aes_decryption_stream::__aes_decryption_stream(const context& ctx,
-                                                     const std::string& key, const std::string& add)
-        : _add(add)
+                                                     const std::string& key, const std::string& aad)
+        : _aad(aad)
     {
         if (!key.empty())
             _key_shadow = nxor_encode_sec(ctx, key);
     }
 
-    void __aes_decryption_stream::start(const std::string& key, const std::string& add)
+    void __aes_decryption_stream::start(const std::string& key, const std::string& aad)
     {
-        _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, add.empty() ? _add : add);
+        _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, aad.empty() ? _aad : aad);
     }
 
     std::string __aes_decryption_stream::decrypt(const std::string& cipher_chunk)
