@@ -17,7 +17,13 @@ public:
 
     static context& init(const config&);
 
-    const config& operator()() const;
+    config& modify_config();
+    const config& get_config() const;
+
+    const config& operator()() const
+    {
+        return get_config();
+    }
 
 private:
     config _config;

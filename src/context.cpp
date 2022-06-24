@@ -43,7 +43,12 @@ context& context::init(const config& config_)
     return ctx;
 }
 
-const config& context::operator()() const
+config& context::modify_config()
+{
+    return _config;
+}
+
+const config& context::get_config() const
 {
     return _config;
 }
