@@ -283,7 +283,7 @@ std::string aes_decrypt(const context& ctx,
     return {};
 }
 
-flip_session_type aes_ecnrypt_flip(const context& ctx,
+flip_session_type aes_encrypt_flip(const context& ctx,
                                    const std::string& plain_data,
                                    const std::string& instant_key,
                                    const std::string& marker,

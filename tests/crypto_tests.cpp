@@ -578,7 +578,7 @@ namespace tests {
         const std::string key { "Temp Key" };
         const std::string marker { "%%" };
 
-        auto flip_data = aes_ecnrypt_flip(default_context_with_crypto_api(), data, key, marker, true); // flip
+        auto flip_data = aes_encrypt_flip(default_context_with_crypto_api(), data, key, marker, true); // flip
 
         const auto& session_data = flip_data.second;
 
@@ -609,7 +609,7 @@ namespace tests {
         {
             std::string key = base_key + std::to_string(ci + 1);
 
-            auto flip_data = aes_ecnrypt_flip(default_context_with_crypto_api(), data, key, {}, true); // flip
+            auto flip_data = aes_encrypt_flip(default_context_with_crypto_api(), data, key, {}, true); // flip
 
             const auto& session_data = flip_data.second;
 
@@ -639,7 +639,7 @@ namespace tests {
 
         for (size_t ci = 0; ci < 5; ++ci)
         {
-            auto flip_data = aes_ecnrypt_flip(default_context_with_crypto_api(), data, key); // flip
+            auto flip_data = aes_encrypt_flip(default_context_with_crypto_api(), data, key); // flip
 
             const auto& session_data = flip_data.second;
 

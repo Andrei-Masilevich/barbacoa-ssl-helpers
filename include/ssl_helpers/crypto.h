@@ -121,7 +121,7 @@ std::string aes_decrypt(const context&,
 
 // Encrypt data at once (Flip).
 
-flip_session_type aes_ecnrypt_flip(const context&,
+flip_session_type aes_encrypt_flip(const context&,
                                    const std::string& plain_data,
                                    const std::string& instant_key,
                                    const std::string& marker = {},
