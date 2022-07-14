@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include <ssl_helpers/context.h>
 
@@ -17,6 +18,6 @@ std::string create_pseudo_random_string_from_time(const uint32_t offset = 0);
 
 uint64_t create_random(const context&);
 std::string create_random_string(const context&, const size_t size, bool fixed = true);
-bool get_random(const context&, unsigned char* pbuff, size_t sz);
+void get_random(const context&, unsigned char* pbuff, size_t sz);
 
 } // namespace ssl_helpers

@@ -6,7 +6,7 @@
 #include "convert_helper.h"
 #include "base58.h"
 #include "base64.h"
-
+#include "memory.h"
 
 namespace ssl_helpers {
 
@@ -44,10 +44,36 @@ std::string to_base64(const std::string& data)
     return impl::to_base64(data.data(), data.size());
 }
 
+std::string to_base64(const char* pdata, size_t sz)
+{
+    return impl::to_base64(pdata, sz);
+}
+
 std::string from_base64(const std::string& str)
 {
-    std::vector<char> data = impl::from_base64(str);
+    std::vector<char> data = impl::from_base64(str.c_str(), str.size());
     return { data.data(), data.size() };
+}
+
+std::string from_base64(const char* pdata, size_t sz)
+{
+    std::vector<char> data = impl::from_base64(pdata, sz);
+    return { data.data(), data.size() };
+}
+
+void from_base64(const char* pdata, size_t sz, std::vector<char>& result)
+{
+    std::vector<char> data = impl::from_base64(pdata, sz);
+    if (result.size() > 0)
+    {
+        const auto initial_sz = result.size();
+        result.resize(initial_sz + data.size());
+        memcpy(result.data() + initial_sz, data.data(), data.size());
+    }
+    else
+    {
+        result = std::move(data);
+    }
 }
 
 namespace {

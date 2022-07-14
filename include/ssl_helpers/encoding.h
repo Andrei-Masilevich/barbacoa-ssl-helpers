@@ -2,6 +2,7 @@
 
 #include <string>
 #include <chrono>
+#include <vector>
 
 
 namespace ssl_helpers {
@@ -28,11 +29,14 @@ std::string from_base58(const std::string&);
 // Encode binary data to base64 string
 
 std::string to_base64(const std::string&);
+std::string to_base64(const char*, size_t);
 
 // Decode binary data from base64 string
 
 std::string from_base64(const std::string&);
-
+std::string from_base64(const char*, size_t);
+// Initialize or append (if it is not empty) encoded data to result vector
+void from_base64(const char*, size_t, std::vector<char>& result);
 
 // Encode binary data to readable string one way only.
 // It uses Python string.printable set but exclude few symbols by default

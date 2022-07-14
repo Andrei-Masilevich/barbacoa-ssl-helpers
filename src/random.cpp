@@ -81,22 +81,19 @@ std::string create_random_string(const context& ctx, const size_t size, bool fix
     return {};
 }
 
-bool get_random(const context& ctx, unsigned char* pbuff, size_t size)
+void get_random(const context& ctx, unsigned char* pbuff, size_t size)
 {
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
-        SSL_HELPERS_ASSERT(pbuff && size > 0, "Size required");
+        SSL_HELPERS_ASSERT(pbuff && size > 0, "Output buffer required");
 
         SSL_HELPERS_ASSERT(RAND_bytes(pbuff, size) == 1, "Libcrypto RAND failed");
-
-        return true;
     }
     catch (std::exception& e)
     {
         SSL_HELPERS_ERROR(e.what());
     }
-    return false;
 }
 
 } // namespace ssl_helpers
