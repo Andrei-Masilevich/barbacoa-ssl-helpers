@@ -6,6 +6,7 @@
 
 #include "ssl_helpers_defines.h"
 
+#include <limits>
 
 namespace ssl_helpers {
 
@@ -85,6 +86,15 @@ std::string nxor_encode(const std::string& secret)
 std::string nxor_decode(const std::string& shadowed_secret)
 {
     return impl::decode_noise_xor(shadowed_secret);
+}
+
+void erase_in_memory(std::string& secret, const std::string& rnd)
+{
+    secret.assign(secret.length(), '\0');
+    if (!rnd.empty())
+    {
+        secret.assign(rnd.c_str(), std::min(secret.length(), rnd.length()));
+    }
 }
 
 } // namespace ssl_helpers
