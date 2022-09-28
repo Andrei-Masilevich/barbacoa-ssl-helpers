@@ -81,9 +81,9 @@ namespace impl {
     {
     public:
         __aes_encryption_stream(const context& ctx,
-                                const std::string& key, const std::string& aad);
+                                const std::string& shadowed_key, const std::string& aad);
 
-        std::string start(const std::string& key, const std::string& aad);
+        std::string start(const std::string& shadowed_key, const std::string& aad);
         std::string encrypt(const std::string& plain_chunk);
         gcm_tag_type finalize();
 
@@ -91,7 +91,7 @@ namespace impl {
 
     private:
         aes_stream_sm<aes_stream_encryptor> _sm;
-        std::string _key_shadow;
+        std::string _shadowed_key;
         std::string _aad;
     };
 
@@ -99,15 +99,15 @@ namespace impl {
     {
     public:
         __aes_decryption_stream(const context& ctx,
-                                const std::string& key, const std::string& aad);
+                                const std::string& shadowed_key, const std::string& aad);
 
-        void start(const std::string& key, const std::string& aad);
+        void start(const std::string& shadowed_key, const std::string& aad);
         std::string decrypt(const std::string& cipher_chunk);
         void finalize(const gcm_tag_type& tag);
 
     private:
         aes_stream_sm<aes_stream_decryptor> _sm;
-        std::string _key_shadow;
+        std::string _shadowed_key;
         std::string _aad;
     };
 

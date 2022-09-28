@@ -28,12 +28,12 @@ class aes_encryption_stream
 {
 public:
     aes_encryption_stream(const context&,
-                          const std::string& default_key = {},
+                          const std::string& default_shadowed_key = {},
                           const std::string& default_aad = {});
     ~aes_encryption_stream();
 
     // Start encryption session.
-    std::string start(const std::string& key = {},
+    std::string start(const std::string& shadowed_key = {},
                       const std::string& aad = {});
 
     // Encrypt chunk of data
@@ -53,12 +53,12 @@ class aes_decryption_stream
 {
 public:
     aes_decryption_stream(const context&,
-                          const std::string& default_key = {},
+                          const std::string& default_shadowed_key = {},
                           const std::string& default_aad = {});
     ~aes_decryption_stream();
 
     // Start decryption session.
-    void start(const std::string& key = {},
+    void start(const std::string& shadowed_key = {},
                const std::string& aad = {});
 
     // Decrypt chunk of cipher data.

@@ -4,6 +4,7 @@
 
 #include <ssl_helpers/crypto.h>
 #include <ssl_helpers/encoding.h>
+#include <ssl_helpers/shadowing.h>
 
 #include "tests_common.h"
 
@@ -17,7 +18,8 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         // Make data with odd size (only stream encryption will support this)
 
@@ -55,11 +57,11 @@ namespace tests {
 
         for (size_t thread_idx = 0; thread_idx < threads_amount; ++thread_idx)
         {
-            threads[thread_idx].reset(new std::thread([thread_idx, key,
+            threads[thread_idx].reset(new std::thread([thread_idx, shadowed_key,
                                                        &data_map, &encrypted_tag_map,
                                                        &ssl_ctx]() {
                 aes_encryption_stream ss(ssl_ctx);
-                ss.start(key);
+                ss.start(shadowed_key);
                 auto encrypted = ss.encrypt(data_map[thread_idx]);
 
                 BOOST_REQUIRE_EQUAL(encrypted.size(), data_map[thread_idx].size());
@@ -78,11 +80,11 @@ namespace tests {
 
         for (size_t thread_idx = 0; thread_idx < threads_amount; ++thread_idx)
         {
-            threads[thread_idx].reset(new std::thread([thread_idx, key,
+            threads[thread_idx].reset(new std::thread([thread_idx, shadowed_key,
                                                        &data_map, &encrypted_tag_map,
                                                        &ssl_ctx]() {
                 aes_decryption_stream ss(ssl_ctx);
-                ss.start(key);
+                ss.start(shadowed_key);
 
                 data_map[thread_idx] = ss.decrypt(data_map[thread_idx]);
 

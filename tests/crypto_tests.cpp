@@ -1,6 +1,7 @@
 #include <ssl_helpers/crypto.h>
 #include <ssl_helpers/hash.h>
 #include <ssl_helpers/encoding.h>
+#include <ssl_helpers/shadowing.h>
 
 #include "tests_common.h"
 
@@ -116,7 +117,8 @@ namespace tests {
 
         std::string data = create_test_data(chunk_size * 3);
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         const std::string ADD_MARK { "AAA" };
         std::string ciphertext_stream_data;
@@ -124,7 +126,7 @@ namespace tests {
             std::stringstream source_ss { data };
             std::stringstream encryption_ss;
 
-            aes_encryption_stream stream { default_context_with_crypto_api(), key, ADD_MARK };
+            aes_encryption_stream stream { default_context_with_crypto_api(), shadowed_key, ADD_MARK };
 
             // Write ADD = "AAA" at the beginning
             encryption_ss << stream.start();
@@ -160,7 +162,7 @@ namespace tests {
             buff[ADD_MARK.size()] = 0;
             BOOST_REQUIRE_EQUAL(std::string { buff }, ADD_MARK);
 
-            aes_decryption_stream stream { default_context_with_crypto_api(), key, ADD_MARK };
+            aes_decryption_stream stream { default_context_with_crypto_api(), shadowed_key, ADD_MARK };
 
             stream.start();
 
@@ -211,13 +213,14 @@ namespace tests {
 
         std::string data = create_test_data(data_sz);
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
-        ciphertext_stream_data.append(enc_stream.start(key));
+        ciphertext_stream_data.append(enc_stream.start(shadowed_key));
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
 
@@ -227,7 +230,7 @@ namespace tests {
         std::string data_;
 
         aes_decryption_stream dec_stream(default_context_with_crypto_api());
-        dec_stream.start(key);
+        dec_stream.start(shadowed_key);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_NO_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))));
 
@@ -241,7 +244,8 @@ namespace tests {
         const size_t data_sz = 1024;
 
         std::string add_mark { "(a)" };
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         std::string data = create_test_data(data_sz);
 
@@ -249,7 +253,7 @@ namespace tests {
         ciphertext_stream_data.reserve(data.size() + 16);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
-        enc_stream.start(key, add_mark);
+        enc_stream.start(shadowed_key, add_mark);
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
 
@@ -259,7 +263,7 @@ namespace tests {
         std::string data_;
 
         aes_decryption_stream dec_stream(default_context_with_crypto_api());
-        dec_stream.start(key, add_mark);
+        dec_stream.start(shadowed_key, add_mark);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_NO_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))));
 
@@ -277,10 +281,11 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
-        ciphertext_stream_data.append(enc_stream.start(key));
+        ciphertext_stream_data.append(enc_stream.start(shadowed_key));
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
 
@@ -293,7 +298,7 @@ namespace tests {
         std::string data_;
 
         aes_decryption_stream dec_stream(default_context_with_crypto_api());
-        dec_stream.start(key);
+        dec_stream.start(shadowed_key);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
     }
@@ -309,10 +314,11 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
-        ciphertext_stream_data.append(enc_stream.start(key));
+        ciphertext_stream_data.append(enc_stream.start(shadowed_key));
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
 
@@ -325,7 +331,7 @@ namespace tests {
         std::string data_;
 
         aes_decryption_stream dec_stream(default_context_with_crypto_api());
-        dec_stream.start(key);
+        dec_stream.start(shadowed_key);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
 
@@ -342,13 +348,14 @@ namespace tests {
         std::string data = create_test_data(data_sz);
 
         std::string add_mark { "(a)" };
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
-        enc_stream.start(key, add_mark);
+        enc_stream.start(shadowed_key, add_mark);
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
 
@@ -361,7 +368,7 @@ namespace tests {
         std::string data_;
 
         aes_decryption_stream dec_stream(default_context_with_crypto_api());
-        dec_stream.start(key, add_mark);
+        dec_stream.start(shadowed_key, add_mark);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
 
@@ -381,17 +388,18 @@ namespace tests {
 
         DUMP_STR(to_printable(data));
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
-        auto ecrypted_data = enc_stream.start(key);
+        auto ecrypted_data = enc_stream.start(shadowed_key);
         ecrypted_data.append(enc_stream.encrypt(data));
         enc_stream.finalize();
 
         DUMP_STR(to_printable(ecrypted_data));
 
         aes_decryption_stream dec_stream(default_context_with_crypto_api());
-        dec_stream.start(key);
+        dec_stream.start(shadowed_key);
         auto data2 = dec_stream.decrypt(ecrypted_data);
         dec_stream.finalize();
 
@@ -406,14 +414,15 @@ namespace tests {
 
         std::string data = create_test_data(data_sz);
 
-        const std::string key { "Secret Key" };
+        const std::string check_key { "Secret Key" };
+        std::string shadowed_key = ssl_helpers::nxor_encode(check_key);
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
 
         BOOST_REQUIRE_THROW(enc_stream.encrypt(data), std::logic_error);
         BOOST_REQUIRE_THROW(enc_stream.finalize(), std::logic_error);
 
-        auto ecrypted_data = enc_stream.start(key);
+        auto ecrypted_data = enc_stream.start(shadowed_key);
         ecrypted_data.append(enc_stream.encrypt(data));
         enc_stream.finalize();
 
@@ -422,7 +431,7 @@ namespace tests {
         BOOST_REQUIRE_THROW(dec_stream.decrypt(ecrypted_data), std::logic_error);
         BOOST_REQUIRE_THROW(dec_stream.finalize(), std::logic_error);
 
-        dec_stream.start(key);
+        dec_stream.start(shadowed_key);
         auto data2 = dec_stream.decrypt(ecrypted_data);
         dec_stream.finalize();
 
@@ -503,7 +512,8 @@ namespace tests {
 
         std::string payload;
         std::stringstream encryption_ss;
-        aes_encryption_stream enc(default_context_with_crypto_api(), key, "x");
+        aes_encryption_stream enc(default_context_with_crypto_api(),
+                                  ssl_helpers::nxor_encode(key), "x");
 
         std::string input_chunk = data + "--S1--";
 
@@ -525,7 +535,7 @@ namespace tests {
 
         input_chunk = data + data + "--S3--";
 
-        store_chunk(encryption_ss, enc.start(new_key));
+        store_chunk(encryption_ss, enc.start(ssl_helpers::nxor_encode(new_key)));
         store_chunk(encryption_ss, enc.encrypt(input_chunk));
         store_chunk(encryption_ss, aes_to_string(enc.finalize()));
 
@@ -544,7 +554,8 @@ namespace tests {
         DUMP_STR(to_printable(encryption_ss.str()));
 
         std::string payload_;
-        aes_decryption_stream dec(default_context_with_crypto_api(), key, "x");
+        aes_decryption_stream dec(default_context_with_crypto_api(),
+                                  ssl_helpers::nxor_encode(key), "x");
 
         dec.start({}, read_chunk(encryption_ss));
         payload_.append(dec.decrypt(read_chunk(encryption_ss)));
@@ -554,7 +565,7 @@ namespace tests {
         payload_.append(dec.decrypt(read_chunk(encryption_ss)));
         BOOST_REQUIRE_NO_THROW(dec.finalize(aes_from_string(read_chunk(encryption_ss))));
 
-        dec.start(new_key, read_chunk(encryption_ss));
+        dec.start(ssl_helpers::nxor_encode(new_key), read_chunk(encryption_ss));
         payload_.append(dec.decrypt(read_chunk(encryption_ss)));
         BOOST_REQUIRE_NO_THROW(dec.finalize(aes_from_string(read_chunk(encryption_ss))));
 

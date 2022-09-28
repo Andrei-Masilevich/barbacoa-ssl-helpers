@@ -7,18 +7,20 @@ namespace ssl_helpers {
 namespace impl {
 
     __aes_encryption_stream::__aes_encryption_stream(const context& ctx,
-                                                     const std::string& key, const std::string& aad)
+                                                     const std::string& shadowed_key, const std::string& aad)
         : _aad(aad)
     {
-        if (!key.empty())
-            _key_shadow = nxor_encode_sec(ctx, key);
+        _shadowed_key = shadowed_key;
     }
 
-    std::string __aes_encryption_stream::start(const std::string& key, const std::string& aad)
+    std::string __aes_encryption_stream::start(const std::string& shadowed_key, const std::string& aad)
     {
-        SSL_HELPERS_ASSERT(!key.empty() || !_key_shadow.empty(), "Key required");
+        SSL_HELPERS_ASSERT(!shadowed_key.empty() || !_shadowed_key.empty(), "Key required");
 
-        return _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, aad.empty() ? _aad : aad);
+        auto secret_key = from_shadow(shadowed_key.empty() ? _shadowed_key : shadowed_key);
+        auto result = _sm.start(secret_key, aad.empty() ? _aad : aad);
+        erase_in_memory(secret_key);
+        return result;
     }
 
     std::string __aes_encryption_stream::encrypt(const std::string& plain_chunk)
@@ -37,16 +39,19 @@ namespace impl {
     }
 
     __aes_decryption_stream::__aes_decryption_stream(const context& ctx,
-                                                     const std::string& key, const std::string& aad)
+                                                     const std::string& shadowed_key, const std::string& aad)
         : _aad(aad)
     {
-        if (!key.empty())
-            _key_shadow = nxor_encode_sec(ctx, key);
+        _shadowed_key = shadowed_key;
     }
 
-    void __aes_decryption_stream::start(const std::string& key, const std::string& aad)
+    void __aes_decryption_stream::start(const std::string& shadowed_key, const std::string& aad)
     {
-        _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, aad.empty() ? _aad : aad);
+        SSL_HELPERS_ASSERT(!shadowed_key.empty() || !_shadowed_key.empty(), "Key required");
+
+        auto secret_key = from_shadow(shadowed_key.empty() ? _shadowed_key : shadowed_key);
+        _sm.start(secret_key, aad.empty() ? _aad : aad);
+        erase_in_memory(secret_key);
     }
 
     std::string __aes_decryption_stream::decrypt(const std::string& cipher_chunk)

@@ -5,6 +5,7 @@
 #include <ssl_helpers/crypto.h>
 #include <ssl_helpers/hash.h>
 #include <ssl_helpers/random.h>
+#include <ssl_helpers/shadowing.h>
 
 #include "crypto_stream_impl.h"
 #include "sha256.h"
@@ -23,14 +24,14 @@ aes_128bit_type aes_from_string(const std::string& tag)
 }
 
 aes_encryption_stream::aes_encryption_stream(const context& ctx,
-                                             const std::string& default_key,
+                                             const std::string& default_shadowed_key,
                                              const std::string& default_aad)
 {
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
 
-        _impl = std::make_unique<impl::__aes_encryption_stream>(ctx, default_key, default_aad);
+        _impl = std::make_unique<impl::__aes_encryption_stream>(ctx, default_shadowed_key, default_aad);
     }
     catch (std::exception& e)
     {
@@ -42,11 +43,11 @@ aes_encryption_stream::~aes_encryption_stream()
 {
 }
 
-std::string aes_encryption_stream::start(const std::string& key, const std::string& aad)
+std::string aes_encryption_stream::start(const std::string& shadowed_key, const std::string& aad)
 {
     try
     {
-        return _impl->start(key, aad);
+        return _impl->start(shadowed_key, aad);
     }
     catch (std::exception& e)
     {
@@ -82,14 +83,14 @@ aes_tag_type aes_encryption_stream::finalize()
 }
 
 aes_decryption_stream::aes_decryption_stream(const context& ctx,
-                                             const std::string& default_key,
+                                             const std::string& default_shadowed_key,
                                              const std::string& default_aad)
 {
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
 
-        _impl = std::make_unique<impl::__aes_decryption_stream>(ctx, default_key, default_aad);
+        _impl = std::make_unique<impl::__aes_decryption_stream>(ctx, default_shadowed_key, default_aad);
     }
     catch (std::exception& e)
     {
@@ -101,11 +102,11 @@ aes_decryption_stream::~aes_decryption_stream()
 {
 }
 
-void aes_decryption_stream::start(const std::string& key, const std::string& aad)
+void aes_decryption_stream::start(const std::string& shadowed_key, const std::string& aad)
 {
     try
     {
-        _impl->start(key, aad);
+        _impl->start(shadowed_key, aad);
     }
     catch (std::exception& e)
     {
@@ -305,7 +306,7 @@ flip_session_type aes_encrypt_flip(const context& ctx,
 
             std::ostringstream out;
 
-            out << stream.start(salted_key.first, marker);
+            out << stream.start(to_shadow(salted_key.first), marker);
             out << stream.encrypt(plain_data);
             tag = stream.finalize();
 
@@ -400,7 +401,8 @@ std::string aes_decrypt_flip(const context& ctx,
 
             aes_decryption_stream stream(ctx);
 
-            stream.start(aes_get_salted_key(user_key, salt), marker);
+            auto secret_key = aes_get_salted_key(user_key, salt);
+            stream.start(to_shadow(secret_key), marker);
 
             char buff[1024];
 
