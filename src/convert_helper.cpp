@@ -74,11 +74,9 @@ namespace impl {
         return from_hex(hex_str, reinterpret_cast<uint8_t*>(out_data), out_data_len);
     }
 
-    static const char* SSL_HELPERS_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S";
-
 #if !defined(SSL_HELPERS_PLATFORM_MOBILE)
 #if !defined(SSL_HELPERS_PLATFORM_WINDOWS)
-    time_t from_iso_string(const std::string& formatted, bool should_utc)
+    time_t from_iso_string(const std::string& formatted, const char* time_format, bool should_utc)
     {
         std::stringstream ss;
 
@@ -86,7 +84,7 @@ namespace impl {
 
         std::tm tp {};
 
-        ss >> std::get_time(&tp, SSL_HELPERS_TIME_FORMAT);
+        ss >> std::get_time(&tp, time_format);
         if (!ss.fail())
         {
             time_t r = std::mktime(&tp);
@@ -95,7 +93,7 @@ namespace impl {
         return {};
     }
 #else //< !SSL_HELPERS_PLATFORM_WINDOWS
-    time_t from_iso_string(const std::string& formatted, bool should_utc)
+    time_t from_iso_string(const std::string& formatted, const char* time_format, bool should_utc)
     {
         std::stringstream ss;
 
@@ -103,7 +101,7 @@ namespace impl {
 
         std::tm tp {};
 
-        ss >> std::get_time(&tp, SSL_HELPERS_TIME_FORMAT);
+        ss >> std::get_time(&tp, time_format);
         if (!ss.fail())
         {
             return (should_utc) ? _mkgmtime(&tp) : std::mktime(&tp);
@@ -112,20 +110,20 @@ namespace impl {
     }
 #endif //< SSL_HELPERS_PLATFORM_WINDOWS
 
-    std::string to_iso_string(const time_t t, bool should_utc)
+    std::string to_iso_string(const time_t t, const char* time_format, bool should_utc)
     {
         std::stringstream ss;
 
-        ss << std::put_time((should_utc) ? std::gmtime(&t) : std::localtime(&t), SSL_HELPERS_TIME_FORMAT);
+        ss << std::put_time((should_utc) ? std::gmtime(&t) : std::localtime(&t), time_format);
 
         return ss.str();
     }
 #else //< !SSL_HELPERS_PLATFORM_MOBILE
-    time_t from_iso_string(const std::string& formatted, bool should_utc)
+    time_t from_iso_string(const std::string& formatted, const char* time_format, bool should_utc)
     {
         std::tm tp {};
 
-        auto call_r = strptime(formatted.c_str(), SSL_HELPERS_TIME_FORMAT, &tp);
+        auto call_r = strptime(formatted.c_str(), time_format, &tp);
 
         SSL_HELPERS_ASSERT(call_r != NULL, "Can't parse time");
 
@@ -133,11 +131,11 @@ namespace impl {
         return (should_utc) ? (r + tp.tm_gmtoff) : (r);
     }
 
-    std::string to_iso_string(const time_t t, bool should_utc)
+    std::string to_iso_string(const time_t t, const char* time_format, bool should_utc)
     {
         char buff[100];
 
-        auto call_r = std::strftime(buff, sizeof(buff), SSL_HELPERS_TIME_FORMAT,
+        auto call_r = std::strftime(buff, sizeof(buff), time_format,
                                     (should_utc) ? std::gmtime(&t) : std::localtime(&t));
 
         SSL_HELPERS_ASSERT(call_r > 0, "Can't format time");

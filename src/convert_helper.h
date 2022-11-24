@@ -35,8 +35,8 @@ namespace impl {
         SSL_HELPERS_ASSERT(r == hex_str.size() / 2);
     }
 
-    time_t from_iso_string(const std::string& formatted, bool should_utc = true);
-    std::string to_iso_string(const time_t, bool should_utc = true);
+    time_t from_iso_string(const std::string& formatted, const char* time_format, bool should_utc);
+    std::string to_iso_string(const time_t, const char* time_format, bool should_utc);
 
 } // namespace impl
 } // namespace ssl_helpers
