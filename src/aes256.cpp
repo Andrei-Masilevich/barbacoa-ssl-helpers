@@ -87,7 +87,7 @@ namespace impl {
         SSL_HELPERS_ASSERT(cypher_init_result_3, ERR_error_string(ERR_get_error(), nullptr));
     }
 
-    void aes_stream_encryptor::set_add(const char* aad, size_t len)
+    void aes_stream_encryptor::set_aad(const char* aad, size_t len)
     {
         SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
 
@@ -155,7 +155,7 @@ namespace impl {
         SSL_HELPERS_ASSERT(cypher_init_result_3, ERR_error_string(ERR_get_error(), nullptr));
     }
 
-    void aes_stream_decryptor::set_add(const char* aad, size_t len)
+    void aes_stream_decryptor::set_aad(const char* aad, size_t len)
     {
         SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
 

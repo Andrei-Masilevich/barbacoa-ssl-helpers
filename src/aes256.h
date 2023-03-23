@@ -48,7 +48,7 @@ namespace impl {
 
         // This can be called zero or more times as required
         // to set public authorization information.
-        void set_add(const char* additional_authenticated_data, size_t len);
+        void set_aad(const char* additional_authenticated_data, size_t len);
 
         // Encrypt. It can be called multiple times to process
         // all plane data.
@@ -76,7 +76,7 @@ namespace impl {
 
         // This can be called zero or more times as required
         // to set public authorization information.
-        void set_add(const char* additional_authenticated_data, size_t len);
+        void set_aad(const char* additional_authenticated_data, size_t len);
 
         // Decrypt. It can be called multiple times to process
         // all encrypted data.

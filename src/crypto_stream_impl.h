@@ -40,7 +40,7 @@ namespace impl {
             _context.init(create_from_string<gcm_key_type>(ph_key, h_key.data_size()),
                           create_from_string<gcm_iv_type>(ph_key + 32, h_key.data_size() - 32));
             if (!aad.empty())
-                _context.set_add(aad.data(), aad.size());
+                _context.set_aad(aad.data(), aad.size());
 
             _state = state::initialized;
 

@@ -13,6 +13,54 @@
 
 namespace ssl_helpers {
 
+// ---------------------------------------------------------------------------------
+// AES256-GSM
+// ---------------------------------------------------------------------------------
+// aes_encryption_stream,
+// aes_decryption_stream
+// aes_encrypt_flip
+// aes_decrypt_flip
+//
+// ---------------------------------------------------------------------------------
+// AES256-CBC
+// ---------------------------------------------------------------------------------
+// aes_encrypt
+// aes_decrypt
+//
+// ---------------------------------------------------------------------------------
+// PBKDF2:
+// ---------------------------------------------------------------------------------
+// aes_create_salted_key
+// aes_get_salted_key
+//
+
+
+// ---------------------------------------------------------------------------------
+// (GSM vs. CBC):
+// ---------------------------------------------------------------------------------
+// AES-GCM is a more secure cipher than AES-CBC (de facto standard block cipher),
+// because AES-CBC, operates by XOR'ing (eXclusive OR) each block with the previous
+// block and cannot be written in parallel. This affects performance due to the complex
+// mathematics involved requiring serial encryption. AES-CBC also is vulnerable
+// to padding oracle attacks, which exploit the tendency of block ciphers to add arbitrary
+// values onto the end of the last block in a sequence in order to meet the specified block size.
+// The Galois/Counter Mode (GCM) of operation (AES-GCM), however, operates quite differently.
+// As the name suggests, GCM combines Galois field multiplication with the counter mode
+// of operation for block ciphers. The counter mode of operation is designed to turn
+// block ciphers into stream ciphers, where each block is encrypted with a pseudorandom
+// value from a “keystream”. This concept achieves this by using successive values of
+// an incrementing “counter” such that every block is encrypted with a unique value
+// that is unlikely to reoccur. The Galois field multiplication component takes this to
+// the next level by conceptualizing each block as its own finite field for the use of
+// encryption on the basis of the AES standard. Additionally, AES-GCM incorporates
+// the handshake authentication into the cipher natively and, as such, it does not require
+// a handshake.
+// AES-GCM is written in parallel which means throughput is significantly higher than
+// AES-CBC by lowering encryption overheads. Each block with AES-GCM can be encrypted
+// independently. The AES-GCM mode of operation can actually be carried out in parallel
+// both for encryption and decryption
+//
+
 // Create ecrypted data stream that additionally includes tag (TAG) of encrypted data
 // and optional marker that is AAD (Additional Authenticated Data).
 // The TAG is subsequently used during the decryption operation to ensure that
@@ -84,7 +132,6 @@ salted_key_type aes_create_salted_key(const context&, const std::string& key);
 std::string aes_get_salted_key(const std::string& key, const std::string& salt);
 std::string aes_get_salted_key(const std::string& key, const aes_salt_type& salt);
 
-
 // Encrypt data at once.
 
 std::string aes_encrypt(const context&, const std::string& plain_data, const std::string& key);
@@ -105,7 +152,6 @@ std::string aes_decrypt(const context&,
                         const std::string& cipher_data, const std::string& key,
                         const std::string& check_tag,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag);
-
 
 // 'Flip/Flap' technique to transfer both encrypted data and key through unencrypted network.
 // Idea is suppose data are transferred by three chunks separated in time
